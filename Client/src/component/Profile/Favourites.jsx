@@ -7,25 +7,33 @@ import { FaRegHeart, FaHeart } from "react-icons/fa6";
 
 function Favourites() {
     const [productDetails, setProductDetails] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const { favourites, toggleFavourite } = useFavorites();
 
     useEffect(() => {
-        const favouriteArray = Array.from(favourites); // Convert Set to Array
+        const favouriteArray = Array.from(favourites).filter((productId) => typeof productId === "string" && productId.trim().length > 0);
+
         if (favouriteArray.length > 0) {
+            setIsLoading(true);
             fetchFavouriteProducts(favouriteArray);
         } else {
-            setProductDetails([]); // Ensure empty state updates
+            setProductDetails([]);
+            setIsLoading(false);
         }
     }, [Array.from(favourites).join(",")]); // Dependency as a string to force re-fetch
 
     const getCategory = (productId) => {
+        if (typeof productId !== "string" || productId.length === 0) {
+            return "Unknown";
+        }
+
         const categoryMap = {
-            i: "Indo-western",
-            s: "Sherwani",
-            t: "Tuxedo",
-            l: "Lehenga",
-            g: "Gown",
-            a: "Anarkali",
+            i: "indo-western",
+            s: "sherwani",
+            t: "tuxedo",
+            l: "lehenga",
+            g: "gown",
+            a: "anarkali",
         };
         const categoryKey = productId.charAt(0).toLowerCase();
         return categoryMap[categoryKey] || "Unknown"; // Ensure a fallback category
@@ -40,9 +48,12 @@ function Favourites() {
             });
 
             const productResults = await Promise.all(productRequests);
-            setProductDetails(productResults.filter((item) => item !== null)); // Remove null values
+            setProductDetails(productResults.filter(Boolean)); // Remove null/undefined values
         } catch (error) {
             console.error("Error fetching favourite products:", error);
+            setProductDetails([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -52,7 +63,11 @@ function Favourites() {
                 <Profilenav />
                 <h2 id="Personalinfo" style={{ marginBottom: "0" }}>Favourites :</h2>
                 <div id="outfitsection" style={{ background: "none", border: "none", rowGap: "12vh", columnGap: "5vw", marginTop: "0" }}>
-                    {productDetails.length > 0 ? (
+                    {isLoading ? (
+                        <div id="spinner" style={{ textAlign: "center", padding: "1rem" }}>
+                            <span className="loader" style={{ backgroundColor: "rgb(245, 193, 145)" }}></span>
+                        </div>
+                    ) : productDetails.length > 0 ? (
                         productDetails.map((item) => (
                             <Link key={item._id} to={`/${item.gender === 'women' ? 'femalecollection' : 'malecollection'}/${item.category}/${item._id}`}>
                                 <div id="outfits" className="outfit-card">
@@ -83,8 +98,8 @@ function Favourites() {
                             </Link>
                         ))
                     ) : (
-                        <div id="spinner" style={{ textAlign: "center", padding: "1rem" }}>
-                            <span className="loader" style={{ backgroundColor: "rgb(245, 193, 145)" }}></span>
+                        <div style={{ textAlign: "center", padding: "1rem", color: "#81171b", fontSize: "1.1rem" }}>
+                            No favourites yet.
                         </div>
                     )}
                 </div>
