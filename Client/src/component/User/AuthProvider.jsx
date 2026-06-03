@@ -2,10 +2,13 @@ import { Auth0Provider } from '@auth0/auth0-react';
 import AuthHandler from './AuthHandler';
 
 const AuthProvider = ({ children }) => {
+    const domain = import.meta.env.VITE_AUTH0_DOMAIN;
+    const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
+
     return (
         <Auth0Provider
-            domain="dev-szphg2t1eedemu6z.us.auth0.com"
-            clientId="fpBzSKCLhE3MUNiiLc1OVigdofc2P4oy"
+            domain={domain}
+            clientId={clientId}
             authorizationParams={{
                 redirect_uri: window.location.origin, 
             }}
